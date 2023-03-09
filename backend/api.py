@@ -3,7 +3,8 @@ import torch
 import time
 
 from transformers import (GPT2LMHeadModel, GPT2Tokenizer,
-                          BertTokenizer, BertForMaskedLM)
+                          BertTokenizer, BertForMaskedLM,
+                          AutoModelForCausalLM, AutoTokenizer)
 from .class_register import register_api
 
 
@@ -69,14 +70,17 @@ def top_k_logits(logits, k):
 
 @register_api(name='gpt-2-small')
 class LM(AbstractLanguageChecker):
-    def __init__(self, model_name_or_path="gpt2"):
+    def __init__(self, model_name_or_path="Salesforce/codegen-350M-mono"):
         super(LM, self).__init__()
-        self.enc = GPT2Tokenizer.from_pretrained(model_name_or_path)
-        self.model = GPT2LMHeadModel.from_pretrained(model_name_or_path)
+        # self.enc = GPT2Tokenizer.from_pretrained(model_name_or_path)
+        # self.model = GPT2LMHeadModel.from_pretrained(model_name_or_path)
+        self.enc = AutoTokenizer.from_pretrained(model_name_or_path)
+        self.model = AutoModelForCausalLM.from_pretrained(model_name_or_path)
         self.model.to(self.device)
         self.model.eval()
         self.start_token = self.enc(self.enc.bos_token, return_tensors='pt').data['input_ids'][0]
-        print("Loaded GPT-2 model!")
+        # print("Loaded GPT-2 model!")
+        print("Loaded codegen model!")
 
     def check_probabilities(self, in_text, topk=40):
         # Process input
